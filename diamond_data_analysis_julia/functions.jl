@@ -146,3 +146,24 @@ function create_violin_boxplot(dataset::DataFrame, num_variable::Symbol, cat_var
         legend=false
     )
 end
+
+function one_hot_encode(df::DataFrame)
+    # Identify categorical columns by checking their element types
+    categorical_cols = [colname for colname in names(df) if typeof(df[!, colname]) <: CategoricalArray]
+
+    # Make a copy of the original dataframe
+    df_encoded = copy(df)
+    
+    for col in categorical_cols
+        for val in unique(df[!, col])
+            # Create a new column name based on the category value
+            new_col_name = Symbol("$(col)_$(val)")
+            # Assign true/false values based on the condition
+            df_encoded[!, new_col_name] = df[!, col] .== val
+        end
+        # Once all one-hot columns are created for this categorical column, drop it
+        select!(df_encoded, Not(col))
+    end
+
+    return df_encoded
+end
